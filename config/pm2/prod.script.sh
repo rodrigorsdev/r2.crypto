@@ -1,0 +1,1 @@
+pm2 start npm --name "PROD | r2.crypto" -- run "start:prod"

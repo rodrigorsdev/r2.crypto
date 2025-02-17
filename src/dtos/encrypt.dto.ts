@@ -6,5 +6,5 @@ export abstract class EncryptDto {
     key: string;
 
     @ApiProperty()
-    payload: string;
+    payload: any;
 }

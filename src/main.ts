@@ -1,13 +1,27 @@
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
+import ConverterUtil from './utils/converter.util';
+import { EnviromentVariablesEnum } from './enums/enviroment.variables.enum';
 
 async function bootstrap() {
+
+  const enviroment = process.env.NODE_ENV.toUpperCase();
+
   const app = await NestFactory.create(AppModule);
+
   const configService = app.get(ConfigService);
 
-  if (configService.get('ENABLE_CORS') === true) {
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  const logger = new Logger('main');
+
+  const enabledCors = ConverterUtil.parseBoolean(configService.get(EnviromentVariablesEnum.ENABLE_CORS));
+
+  if (enabledCors) {
     const corsOptions = {
       origin: '*',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -17,18 +31,29 @@ async function bootstrap() {
       allowedHeaders: 'Content-Type, Accept, Authorization'
     };
     app.enableCors(corsOptions);
+
+    logger.debug('CORS ENABLED');
   }
 
-  const swaggerOptions = new DocumentBuilder()
-    .setTitle('R2 Crypto API')
-    .setVersion('0.0.1')
-    .build();
+  const enabledDocs = ConverterUtil.parseBoolean(configService.get(EnviromentVariablesEnum.ENABLE_DOCS));
 
-  const document = SwaggerModule.createDocument(app, swaggerOptions);
-  SwaggerModule.setup('docs', app, document);
+  if (enabledDocs) {
+    const swaggerOptions = new DocumentBuilder()
+      .setTitle(`R2 Crypto API | ${enviroment}`)
+      .setVersion('0.0.1')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      )
+      .build();
 
-  const port = configService.get('PORT') || 3000;
+    const document = SwaggerModule.createDocument(app, swaggerOptions);
+    SwaggerModule.setup('docs', app, document);
+
+    logger.debug('ENABLE DOCS');
+  }
+
+  const port = configService.get(EnviromentVariablesEnum.PORT) || 3000;
   await app.listen(port);
-  console.log(`r2.crypto started at port ${port}`);
+  logger.log(`${enviroment} | R2 Crypto API started at port ${port}`);
 }
 bootstrap();

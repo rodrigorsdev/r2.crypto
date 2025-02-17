@@ -2,12 +2,14 @@ import * as CryptoJS from 'crypto-js';
 
 export default class CryptoUtil {
 
-    static encrypt(key: string, textToEncrypt: string): string {
-        return CryptoJS.AES.encrypt(textToEncrypt, key).toString();
+    static encrypt(key: string, dto: any): string {
+        const dtoJson = JSON.stringify(dto);
+        return CryptoJS.AES.encrypt(dtoJson, key).toString();
     }
 
     static decrypt(key: string, textToDecrypt: string): any {
         const bytes = CryptoJS.AES.decrypt(textToDecrypt, key);
-        return bytes.toString(CryptoJS.enc.Utf8);
+        const result = bytes.toString(CryptoJS.enc.Utf8);
+        return JSON.parse(result);
     }
 }

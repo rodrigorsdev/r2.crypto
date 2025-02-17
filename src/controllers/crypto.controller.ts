@@ -15,53 +15,31 @@ export class CryptoController {
     async encrypt(
         @Body() dto: EncryptDto
     ) {
+        const result = CryptoUtil.encrypt(
+            dto.key,
+            dto.payload
+        );
 
-        try {
-
-            const result = CryptoUtil.encrypt(
-                dto.key,
-                dto.payload
-            );
-
-            return new ResponseDto(
-                true,
-                result,
-                null
-            );
-
-        } catch (error) {
-            throw new HttpException(
-                new ResponseDto(
-                    false,
-                    null,
-                    [error.message]), HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseDto(
+            true,
+            result,
+            null
+        );
     }
 
     @Post('decrypt')
     async decrypt(
         @Body() dto: DecryptDto
     ) {
+        const result = CryptoUtil.decrypt(
+            dto.key,
+            dto.encrypted
+        );
 
-        try {
-
-            const result = CryptoUtil.decrypt(
-                dto.key,
-                dto.encrypted
-            );
-
-            return new ResponseDto(
-                true,
-                result,
-                null
-            );
-
-        } catch (error) {
-            throw new HttpException(
-                new ResponseDto(
-                    false,
-                    null,
-                    [error.message]), HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseDto(
+            true,
+            result,
+            null
+        );
     }
 }
