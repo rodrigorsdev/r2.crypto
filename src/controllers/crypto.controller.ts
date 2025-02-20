@@ -4,6 +4,8 @@ import CryptoUtil from "../utils/crypto.util";
 import { DecryptDto } from "../dtos/decrypt.dto";
 import { EncryptDto } from "../dtos/encrypt.dto";
 import { ResponseDto } from "../dtos/response.dto";
+import { BcryptEncryptDto } from "../dtos/bcrypt-encrypt.dto";
+import * as bcrypt from 'bcryptjs';
 
 @ApiTags('crypto')
 @Controller('crypto')
@@ -35,6 +37,19 @@ export class CryptoController {
             dto.key,
             dto.encrypted
         );
+
+        return new ResponseDto(
+            true,
+            result,
+            null
+        );
+    }
+
+    @Post('bcrypt/encrypt')
+    async bcrypEncrypt(
+        @Body() dto: BcryptEncryptDto
+    ) {
+        const result =  await bcrypt.hash(dto.password, 13);
 
         return new ResponseDto(
             true,
